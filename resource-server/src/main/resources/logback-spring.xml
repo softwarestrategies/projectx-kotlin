@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger{36}.%M - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="TO-FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./tmp/log/projectx-resource-server.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger{36}.%M - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./tmp/log/projectx-resource-server_%d{dd-MM-yyyy}.log</fileNamePattern>
+            <maxHistory>10</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="org.springframework.boot.autoconfigure.logging" level="ERROR" />
+
+    <springProfile name="test">
+        <root level="INFO" additivity="false">
+            <appender-ref ref="STDOUT"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="default,dev">
+        <root level="INFO" additivity="false">
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="TO-FILE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="alpha,beta,prod">
+        <property file="/etc/projectx-resource-server.yml" />
+        <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
+            <smtpHost>${appconfig.smtp}</smtpHost>
+            <from>${appconfig.support.email}</from>
+            <to>${appconfig.emergencyEmails}</to>
+
+            <subject>[${appconfig.instance.name}] ProjectX Project Service exception</subject>
+
+            <layout class="ch.qos.logback.classic.html.HTMLLayout"/>
+
+            <cyclicBufferTracker class="ch.qos.logback.core.spi.CyclicBufferTracker">
+                <bufferSize>1</bufferSize>
+            </cyclicBufferTracker>
+        </appender>
+
+        <root level="ERROR" additivity="false">
+            <appender-ref ref="EMAIL"/>
+            <appender-ref ref="TO-FILE"/>
+        </root>
+
+        <root level="INFO" additivity="false">
+            <appender-ref ref="TO-FILE"/>
+        </root>
+    </springProfile>
+</configuration>

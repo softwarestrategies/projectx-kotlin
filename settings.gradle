@@ -1,0 +1,4 @@
+rootProject.name = 'projectx-kotlin'
+
+include("resource-server", "simple-ui-server")
+

@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: resource-service
+  profiles:
+    active: default,dev
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8484/auth/realms/projectx
+          jwk-set-uri: http://localhost:8484/auth/realms/projectx/protocol/openid-connect/certs
+
+keycloak:
+  auth-server-url: http://localhost:8484/auth
+  realm: projectx
+  resource: projectx-ui
+  public-client: false
+  principal-attribute: preferred_username
+
+server:
+  port: 7070
+
+---
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost/projectx
+    username: projectx_admin
+    password: changeme
+    host: localhost
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          r2dbc: DEBUG

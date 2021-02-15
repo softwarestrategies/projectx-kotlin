@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    container_name: projectx-kotlin-zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka:2.13-2.6.0
+    container_name: projectx-kotlin-kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_HOST: localhost
+      KAFKA_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "StartProcess:1:1,FinishProcess:1:1"
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ADVERTISED_PORT: 9092
+    volumes:
+      - ./docker-local-data/var/run/docker.sock:/var/run/docker.sock
+      - ./docker-local-data/kafka/data:/var/lib/kafka/data
+
+  postgresql:
+    image: postgres:13.0-alpine
+    container_name: projectx-kotlin-postgresql
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=changeme
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker-local-data/postgresql/data:/var/lib/postgresql/data
+      - ./scripts/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:12.0.2
+    container_name: projectx-kotlin-keycloak
+    restart: always
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgresql
+      DB_SCHEMA: public
+      DB_DATABASE: keycloak
+      DB_USER: keycloak_admin
+      DB_PASSWORD: changeme
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: changeme
+      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+      #JDBC_PARAMS: "ssl=true"
+    ports:
+      - "8484:8080"
+      - "8443:8443"
+    depends_on:
+      - postgresql
+
