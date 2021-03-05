@@ -1,9 +1,9 @@
-# ProjectX
+# ProjectX-Kotlin
 
 ## About
 
 This project is both for learning/practicing new tech and acting as a template for (potential) future projects. It is a
-perpetual work-in-progress and not a know-all end-all.
+perpetual work-in-progress (sometimes sorta/kinda broken) and not a know-all end-all.
 
 **Technologies used:**
 
